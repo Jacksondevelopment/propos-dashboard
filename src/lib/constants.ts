@@ -7,8 +7,19 @@ export const COLOR_BGS: Record<string, string> = {
   purple: '#2a1a5a', teal: '#0a2e2c', red: '#3d1010',
 }
 export const DEPT_COLORS: Record<string, string> = {
-  PM: '#4f8ef7', DC: '#9b72f5', OPS: '#3ecf8e',
+  PM: '#4f8ef7',
+  DC: '#9b72f5',
+  OPS: '#3ecf8e',
+  SLS: '#f5a623',
 }
+export const DEPT_LABELS: Record<string, string> = {
+  PM: 'Property Mgmt',
+  DC: 'Dev & Construction',
+  OPS: 'Operations',
+  SLS: 'Sales',
+}
+export const DEPARTMENTS = ['PM', 'DC', 'OPS', 'SLS']
+
 export const STATUS_LABELS = ['Not started', 'In progress', 'Blocked', 'Done']
 export const STATUS_CLASSES = ['sp-todo', 'sp-inprog', 'sp-blocked', 'sp-done']
 export const STATUS_STYLES: Record<number, { bg: string; color: string }> = {

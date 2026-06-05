@@ -18,7 +18,7 @@ export type Task = {
   id: string
   name: string
   property_id: string
-  department: 'PM' | 'DC' | 'OPS'
+  department: 'PM' | 'DC' | 'OPS' | 'SLS'
   unit_area: string
   status: 0 | 1 | 2 | 3
   due_date: string
@@ -38,7 +38,7 @@ export type BudgetItem = {
 export type TeamMember = {
   id: string
   property_id: string
-  department: 'PM' | 'DC' | 'OPS'
+  department: 'PM' | 'DC' | 'OPS' | 'SLS'
   name: string
   initials: string
   email: string
