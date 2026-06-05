@@ -1,6 +1,6 @@
 'use client'
 import { type Property, type Task, type BudgetItem, type TeamMember, type Announcement, type Milestone } from '@/lib/supabase'
-import { DEPT_COLORS, STATUS_LABELS, STATUS_STYLES, propColor, propColorBg, isOverdue, fmt } from '@/lib/constants'
+import { DEPT_COLORS, DEPT_LABELS, DEPARTMENTS, STATUS_LABELS, STATUS_STYLES, propColor, propColorBg, isOverdue, fmt } from '@/lib/constants'
 
 interface Props {
   properties: Property[]
@@ -80,7 +80,7 @@ export default function MainView({
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                 <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: propColor(p.color || 'blue'), flexShrink: 0 }} />
-                <span style={{ fontSize: '12px' }}>{p.id === 'all' ? 'All' : p.name.split(' ')[0]}</span>
+                <span style={{ fontSize: '12px' }}>{p.id === 'all' ? 'All' : p.name}</span>
               </div>
               <span style={{
                 fontSize: '10px', borderRadius: '10px', padding: '1px 5px',
@@ -92,7 +92,7 @@ export default function MainView({
         })}
         <div style={{ height: '1px', background: 'var(--border)', margin: '16px 0' }} />
         <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text3)', letterSpacing: '.8px', textTransform: 'uppercase', padding: '0 8px', marginBottom: '8px' }}>Departments</div>
-        {['All', 'PM', 'DC', 'OPS'].map(d => (
+        {['All', ...DEPARTMENTS].map(d => (
           <div key={d} onClick={() => setFilterDept(d)} style={{
             padding: '7px 8px', borderRadius: '7px', cursor: 'pointer', fontSize: '12px',
             color: filterDept === d ? 'var(--text)' : 'var(--text2)',
@@ -100,7 +100,7 @@ export default function MainView({
             display: 'flex', alignItems: 'center', gap: '7px',
           }}>
             {d !== 'All' && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: DEPT_COLORS[d] }} />}
-            {d === 'All' ? 'All Depts' : d === 'PM' ? 'Property Mgmt' : d === 'DC' ? 'Dev & Construction' : 'Operations'}
+            {d === 'All' ? 'All Depts' : DEPT_LABELS[d]}
           </div>
         ))}
       </div>
@@ -191,7 +191,7 @@ export default function MainView({
                   <div style={{ fontSize: '13px', color: isDone ? 'var(--text3)' : 'var(--text)', textDecoration: isDone ? 'line-through' : 'none', marginBottom: '3px' }}>{task.name}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap' }}>
                     {isAll && taskProp && (
-                      <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '10px', fontWeight: 500, background: propColorBg(taskProp.color), color: propColor(taskProp.color) }}>{taskProp.name.split(' ')[0]}</span>
+                      <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '10px', fontWeight: 500, background: propColorBg(taskProp.color), color: propColor(taskProp.color) }}>{taskProp.name}</span>
                     )}
                     <span style={{ fontSize: '11px', color: DEPT_COLORS[task.department] || 'var(--text3)' }}>{task.department}</span>
                     {task.unit_area && <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: 'var(--purple2)', color: 'var(--purple)', fontFamily: 'monospace' }}>{task.unit_area}</span>}
@@ -215,7 +215,6 @@ export default function MainView({
 
         {/* Bottom two-col */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
-          {/* Budget */}
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>
               <i className="ti ti-chart-bar" style={{ fontSize: '16px', color: 'var(--amber)' }} /> Budget Tracking
@@ -239,7 +238,6 @@ export default function MainView({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {/* Milestones */}
             <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>
                 <i className="ti ti-flag" style={{ fontSize: '16px', color: 'var(--green)' }} /> Project Milestones
@@ -266,7 +264,6 @@ export default function MainView({
               {propMilestones.length === 0 && <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text3)', fontSize: '13px' }}>No milestones — click Edit → 🚩 Milestones to add some</div>}
             </div>
 
-            {/* Announcements */}
             <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>
                 <i className="ti ti-speakerphone" style={{ fontSize: '16px', color: 'var(--purple)' }} /> Announcements
@@ -281,7 +278,7 @@ export default function MainView({
                       <div style={{ fontSize: '12px', color: 'var(--text3)', lineHeight: 1.5 }}>{a.body}</div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px' }}>
                         <span style={{ fontSize: '11px', color: 'var(--text3)' }}>{new Date(a.created_at).toLocaleDateString()}</span>
-                        {isAll && p && <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '10px', background: propColorBg(p.color), color: propColor(p.color) }}>{p.name.split(' ')[0]}</span>}
+                        {isAll && p && <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '10px', background: propColorBg(p.color), color: propColor(p.color) }}>{p.name}</span>}
                       </div>
                     </div>
                   </div>

@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { supabase, type TeamMember, type Property } from '@/lib/supabase'
-import { DEPT_COLORS } from '@/lib/constants'
+import { DEPT_COLORS, DEPARTMENTS, DEPT_LABELS } from '@/lib/constants'
 
 interface Props {
   properties: Property[]
@@ -18,7 +18,7 @@ export default function EditTeamModal({ properties, currentProp, teamMembers, on
   const [newName, setNewName] = useState('')
   const [newInitials, setNewInitials] = useState('')
   const [newEmail, setNewEmail] = useState('')
-  const [newDept, setNewDept] = useState<'PM' | 'DC' | 'OPS'>('PM')
+  const [newDept, setNewDept] = useState<TeamMember['department']>('PM')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -70,20 +70,17 @@ export default function EditTeamModal({ properties, currentProp, teamMembers, on
           </select>
         </div>
 
-        {/* Existing members */}
         {members.length > 0 && (
           <div style={{ marginBottom: '20px' }}>
             <div style={{ fontSize: '12px', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: '8px' }}>Current team</div>
             {members.map(m => (
               <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', padding: '10px', background: 'var(--bg3)', borderRadius: '8px' }}>
                 <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: DEPT_COLORS[m.department] || '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 600, color: '#fff', flexShrink: 0 }}>{m.initials}</div>
-                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 60px 80px 1fr', gap: '6px' }}>
+                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 60px 90px 1fr', gap: '6px' }}>
                   <input defaultValue={m.name} onBlur={e => handleUpdate(m.id, 'name', e.target.value)} style={{ padding: '5px 8px', fontSize: '12px' }} />
                   <input defaultValue={m.initials} onBlur={e => handleUpdate(m.id, 'initials', e.target.value.toUpperCase())} style={{ padding: '5px 8px', fontSize: '12px' }} maxLength={3} />
                   <select defaultValue={m.department} onChange={e => handleUpdate(m.id, 'department', e.target.value)} style={{ padding: '5px 8px', fontSize: '12px' }}>
-                    <option value="PM">PM</option>
-                    <option value="DC">DC</option>
-                    <option value="OPS">OPS</option>
+                    {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                   <input defaultValue={m.email} onBlur={e => handleUpdate(m.id, 'email', e.target.value)} style={{ padding: '5px 8px', fontSize: '12px' }} placeholder="email" />
                 </div>
@@ -93,16 +90,15 @@ export default function EditTeamModal({ properties, currentProp, teamMembers, on
           </div>
         )}
 
-        {/* Add new member */}
         <div style={{ background: 'var(--bg3)', borderRadius: '8px', padding: '14px' }}>
           <div style={{ fontSize: '12px', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: '12px' }}>Add team member</div>
           <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 80px', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 90px', gap: '10px' }}>
               <div><label style={labelStyle}>Full name</label><input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Jane Smith" required /></div>
               <div><label style={labelStyle}>Initials</label><input value={newInitials} onChange={e => setNewInitials(e.target.value)} placeholder="JS" maxLength={3} required /></div>
               <div><label style={labelStyle}>Dept</label>
-                <select value={newDept} onChange={e => setNewDept(e.target.value as 'PM' | 'DC' | 'OPS')}>
-                  <option value="PM">PM</option><option value="DC">DC</option><option value="OPS">OPS</option>
+                <select value={newDept} onChange={e => setNewDept(e.target.value as TeamMember['department'])}>
+                  {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
             </div>

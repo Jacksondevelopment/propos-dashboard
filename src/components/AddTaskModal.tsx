@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { type Property, type Task } from '@/lib/supabase'
-import { STATUS_LABELS } from '@/lib/constants'
+import { STATUS_LABELS, DEPARTMENTS, DEPT_LABELS } from '@/lib/constants'
 
 interface Props {
   properties: Property[]
@@ -14,7 +14,7 @@ export default function AddTaskModal({ properties, currentProp, onAdd, onClose }
   const defaultProp = currentProp === 'all' ? (properties[0]?.id || '') : currentProp
   const [name, setName] = useState('')
   const [propId, setPropId] = useState(defaultProp)
-  const [dept, setDept] = useState<'PM' | 'DC' | 'OPS'>('PM')
+  const [dept, setDept] = useState<Task['department']>('PM')
   const [unit, setUnit] = useState('')
   const [status, setStatus] = useState(0)
   const [due, setDue] = useState(() => {
@@ -55,10 +55,8 @@ export default function AddTaskModal({ properties, currentProp, onAdd, onClose }
             </div>
             <div style={groupStyle}>
               <label style={labelStyle}>Department</label>
-              <select value={dept} onChange={e => setDept(e.target.value as 'PM' | 'DC' | 'OPS')}>
-                <option value="PM">PM — Property Mgmt</option>
-                <option value="DC">DC — Dev & Construction</option>
-                <option value="OPS">OPS — Operations</option>
+              <select value={dept} onChange={e => setDept(e.target.value as Task['department'])}>
+                {DEPARTMENTS.map(d => <option key={d} value={d}>{d} — {DEPT_LABELS[d]}</option>)}
               </select>
             </div>
           </div>
@@ -66,7 +64,7 @@ export default function AddTaskModal({ properties, currentProp, onAdd, onClose }
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div style={groupStyle}>
               <label style={labelStyle}>Unit / Area</label>
-              <input value={unit} onChange={e => setUnit(e.target.value)} placeholder="e.g. Unit 4B, Lobby, Bldg A" />
+              <input value={unit} onChange={e => setUnit(e.target.value)} placeholder="e.g. Unit 4B, Lobby" />
             </div>
             <div style={groupStyle}>
               <label style={labelStyle}>Status</label>
@@ -88,12 +86,8 @@ export default function AddTaskModal({ properties, currentProp, onAdd, onClose }
           </div>
 
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '6px' }}>
-            <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text2)', padding: '9px 18px', borderRadius: '7px', cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit' }}>
-              Cancel
-            </button>
-            <button type="submit" style={{ background: 'var(--blue)', color: '#fff', border: 'none', padding: '9px 18px', borderRadius: '7px', cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit', fontWeight: 500 }}>
-              Add task
-            </button>
+            <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text2)', padding: '9px 18px', borderRadius: '7px', cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit' }}>Cancel</button>
+            <button type="submit" style={{ background: 'var(--blue)', color: '#fff', border: 'none', padding: '9px 18px', borderRadius: '7px', cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit', fontWeight: 500 }}>Add task</button>
           </div>
         </form>
       </div>
