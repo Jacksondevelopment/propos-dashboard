@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { type Property, type Task } from '@/lib/supabase'
-import { STATUS_LABELS, DEPARTMENTS, DEPT_LABELS } from '@/lib/constants'
+import { STATUS_LABELS } from '@/lib/constants'
 
 interface Props {
   properties: Property[]
@@ -9,6 +9,13 @@ interface Props {
   onAdd: (task: Omit<Task, 'id' | 'created_at'>) => void
   onClose: () => void
 }
+
+const DEPARTMENTS = [
+  { code: 'PM', label: 'PM — Property Mgmt' },
+  { code: 'DC', label: 'DC — Dev & Construction' },
+  { code: 'OPS', label: 'OPS — Operations' },
+  { code: 'SLS', label: 'SLS — Sales' },
+]
 
 export default function AddTaskModal({ properties, currentProp, onAdd, onClose }: Props) {
   const defaultProp = currentProp === 'all' ? (properties[0]?.id || '') : currentProp
@@ -39,13 +46,11 @@ export default function AddTaskModal({ properties, currentProp, onAdd, onClose }
           <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text)' }}>Add New Task</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '18px' }}>×</button>
         </div>
-
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div style={groupStyle}>
             <label style={labelStyle}>Task name</label>
             <input value={name} onChange={e => setName(e.target.value)} placeholder="Describe the task..." required autoFocus />
           </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div style={groupStyle}>
               <label style={labelStyle}>Property</label>
@@ -56,11 +61,10 @@ export default function AddTaskModal({ properties, currentProp, onAdd, onClose }
             <div style={groupStyle}>
               <label style={labelStyle}>Department</label>
               <select value={dept} onChange={e => setDept(e.target.value as Task['department'])}>
-                {DEPARTMENTS.map(d => <option key={d} value={d}>{d} — {DEPT_LABELS[d]}</option>)}
+                {DEPARTMENTS.map(d => <option key={d.code} value={d.code}>{d.label}</option>)}
               </select>
             </div>
           </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div style={groupStyle}>
               <label style={labelStyle}>Unit / Area</label>
@@ -73,7 +77,6 @@ export default function AddTaskModal({ properties, currentProp, onAdd, onClose }
               </select>
             </div>
           </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div style={groupStyle}>
               <label style={labelStyle}>Due date</label>
@@ -84,7 +87,6 @@ export default function AddTaskModal({ properties, currentProp, onAdd, onClose }
               <input value={assignee} onChange={e => setAssignee(e.target.value)} placeholder="e.g. MB" maxLength={3} />
             </div>
           </div>
-
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '6px' }}>
             <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text2)', padding: '9px 18px', borderRadius: '7px', cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit' }}>Cancel</button>
             <button type="submit" style={{ background: 'var(--blue)', color: '#fff', border: 'none', padding: '9px 18px', borderRadius: '7px', cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit', fontWeight: 500 }}>Add task</button>
