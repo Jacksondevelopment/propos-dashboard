@@ -24,23 +24,11 @@ export default function TopNav({ properties, currentProp, setCurrentProp, viewMo
       padding: '0 16px', height: '56px', flexShrink: 0, overflow: 'hidden'
     }}>
       {/* JDC Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginRight: '24px', flexShrink: 0 }}>
-        {/* Logo mark - grid icon matching JDC logo style */}
-        <div style={{
-          width: '32px', height: '32px', border: '2px solid #ffffff',
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px',
-          padding: '4px', borderRadius: '3px', flexShrink: 0
-        }}>
-          <div style={{ background: '#ffffff', borderRadius: '1px' }} />
-          <div style={{ background: '#888888', borderRadius: '1px' }} />
-          <div style={{ background: '#888888', borderRadius: '1px' }} />
-          <div style={{ background: '#ffffff', borderRadius: '1px' }} />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-          <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', letterSpacing: '1px', textTransform: 'uppercase' }}>Jackson</span>
-          <span style={{ fontSize: '9px', fontWeight: 400, color: '#888888', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Development Co.</span>
-        </div>
-        <div style={{ width: '1px', height: '24px', background: '#333', marginLeft: '8px', marginRight: '4px' }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginRight: '24px', flexShrink: 0 }}>
+        <img src="/jdc-logo.png" alt="Jackson Development Company" style={{
+          height: '36px', width: 'auto', borderRadius: '3px', display: 'block'
+        }} />
+        <div style={{ width: '1px', height: '24px', background: '#333' }} />
         <span style={{ fontSize: '12px', color: '#888888', letterSpacing: '.5px' }}>Dashboard</span>
       </div>
 
