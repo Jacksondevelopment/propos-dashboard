@@ -104,8 +104,8 @@ export default function Home() {
   const currentPropData = properties.find(p => p.id === currentProp)
 
   if (authLoading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
-      <div style={{ color: 'var(--text3)', fontSize: '14px' }}>Loading...</div>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f5f7' }}>
+      <div style={{ color: '#8a8d96', fontSize: '14px' }}>Loading...</div>
     </div>
   )
 
@@ -123,9 +123,13 @@ export default function Home() {
         userEmail={user?.email}
       />
 
-      {/* Edit toolbar */}
-      <div style={{ display: 'flex', gap: '6px', padding: '8px 16px', background: 'var(--bg2)', borderBottom: '1px solid var(--border)', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '11px', color: 'var(--text3)', alignSelf: 'center', marginRight: '4px' }}>EDIT:</span>
+      {/* Edit toolbar - light theme */}
+      <div style={{
+        display: 'flex', gap: '6px', padding: '8px 16px',
+        background: '#ffffff', borderBottom: '1px solid #e0e1e5', flexWrap: 'wrap',
+        alignItems: 'center'
+      }}>
+        <span style={{ fontSize: '11px', color: '#8a8d96', letterSpacing: '.5px', textTransform: 'uppercase', marginRight: '4px' }}>Edit:</span>
         {[
           { label: '🏢 Property', modal: 'editProperty' as ModalType, disabled: currentProp === 'all' },
           { label: '💰 Budget', modal: 'editBudget' as ModalType, disabled: false },
@@ -134,20 +138,21 @@ export default function Home() {
           { label: '🚩 Milestones', modal: 'editMilestones' as ModalType, disabled: false },
         ].map(btn => (
           <button key={btn.label} onClick={() => !btn.disabled && setActiveModal(btn.modal)} disabled={btn.disabled} style={{
-            background: 'var(--bg3)', border: '1px solid var(--border)', color: btn.disabled ? 'var(--text3)' : 'var(--text2)',
+            background: '#f4f5f7', border: '1px solid #e0e1e5',
+            color: btn.disabled ? '#c8c9ce' : '#4a4d56',
             padding: '5px 12px', borderRadius: '6px', cursor: btn.disabled ? 'not-allowed' : 'pointer',
             fontSize: '12px', fontFamily: 'inherit', transition: 'all .15s', opacity: btn.disabled ? 0.5 : 1,
           }}
-            onMouseEnter={e => { if (!btn.disabled) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border2)' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)' }}
+            onMouseEnter={e => { if (!btn.disabled) { (e.currentTarget as HTMLButtonElement).style.background = '#e4e5e8'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#c8c9ce' } }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f4f5f7'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#e0e1e5' }}
           >{btn.label}</button>
         ))}
-        {currentProp === 'all' && <span style={{ fontSize: '11px', color: 'var(--text3)', alignSelf: 'center', marginLeft: '4px' }}>— Select a property to edit its details</span>}
+        {currentProp === 'all' && <span style={{ fontSize: '11px', color: '#8a8d96', marginLeft: '4px' }}>— Select a property to edit its details</span>}
       </div>
 
       <div style={{ flex: 1, overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text3)', fontSize: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#8a8d96', fontSize: '14px' }}>
             Loading data...
           </div>
         ) : viewMode === 'bysite' ? (
@@ -178,29 +183,13 @@ export default function Home() {
         )}
       </div>
 
-      {/* Modals */}
-      {activeModal === 'addTask' && (
-        <AddTaskModal properties={properties} currentProp={currentProp} onAdd={handleAddTask} onClose={() => setActiveModal(null)} />
-      )}
-      {activeModal === 'report' && (
-        <ReportModal properties={properties} tasks={tasks} budgetItems={budgetItems} teamMembers={teamMembers} milestones={milestones}
-          currentProp={currentProp === 'all' ? (properties[0]?.id || '') : currentProp} onClose={() => setActiveModal(null)} />
-      )}
-      {activeModal === 'editProperty' && currentPropData && (
-        <EditPropertyModal property={currentPropData} onClose={() => setActiveModal(null)} onSaved={loadData} />
-      )}
-      {activeModal === 'editBudget' && (
-        <EditBudgetModal properties={properties} currentProp={currentProp} budgetItems={budgetItems} onClose={() => setActiveModal(null)} onSaved={loadData} />
-      )}
-      {activeModal === 'editTeam' && (
-        <EditTeamModal properties={properties} currentProp={currentProp} teamMembers={teamMembers} onClose={() => setActiveModal(null)} onSaved={loadData} />
-      )}
-      {activeModal === 'editAnnouncements' && (
-        <EditAnnouncementsModal properties={properties} currentProp={currentProp} announcements={announcements} onClose={() => setActiveModal(null)} onSaved={loadData} />
-      )}
-      {activeModal === 'editMilestones' && (
-        <EditMilestonesModal properties={properties} currentProp={currentProp} milestones={milestones} onClose={() => setActiveModal(null)} onSaved={loadData} />
-      )}
+      {activeModal === 'addTask' && <AddTaskModal properties={properties} currentProp={currentProp} onAdd={handleAddTask} onClose={() => setActiveModal(null)} />}
+      {activeModal === 'report' && <ReportModal properties={properties} tasks={tasks} budgetItems={budgetItems} teamMembers={teamMembers} milestones={milestones} currentProp={currentProp === 'all' ? (properties[0]?.id || '') : currentProp} onClose={() => setActiveModal(null)} />}
+      {activeModal === 'editProperty' && currentPropData && <EditPropertyModal property={currentPropData} onClose={() => setActiveModal(null)} onSaved={loadData} />}
+      {activeModal === 'editBudget' && <EditBudgetModal properties={properties} currentProp={currentProp} budgetItems={budgetItems} onClose={() => setActiveModal(null)} onSaved={loadData} />}
+      {activeModal === 'editTeam' && <EditTeamModal properties={properties} currentProp={currentProp} teamMembers={teamMembers} onClose={() => setActiveModal(null)} onSaved={loadData} />}
+      {activeModal === 'editAnnouncements' && <EditAnnouncementsModal properties={properties} currentProp={currentProp} announcements={announcements} onClose={() => setActiveModal(null)} onSaved={loadData} />}
+      {activeModal === 'editMilestones' && <EditMilestonesModal properties={properties} currentProp={currentProp} milestones={milestones} onClose={() => setActiveModal(null)} onSaved={loadData} />}
     </div>
   )
 }

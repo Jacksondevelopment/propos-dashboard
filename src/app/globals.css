@@ -2,33 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
 :root {
-  --bg: #0f1117;
-  --bg2: #161b27;
-  --bg3: #1e2535;
-  --bg4: #252d40;
-  --border: #2a3350;
-  --border2: #3a4568;
-  --text: #e8eaf2;
-  --text2: #8b92b0;
-  --text3: #5a6280;
-  --blue: #4f8ef7;
-  --blue2: #1a3a7a;
-  --blue3: #0d2050;
-  --green: #3ecf8e;
-  --green2: #0d3d2a;
-  --amber: #f5a623;
-  --amber2: #3d2a0a;
-  --red: #f25c5c;
-  --red2: #3d1010;
-  --purple: #9b72f5;
-  --purple2: #2a1a5a;
-  --teal: #2dd4bf;
-  --teal2: #0a2e2c;
+  /* Light mode - JDC brand colors */
+  --bg: #f4f5f7;
+  --bg2: #ffffff;
+  --bg3: #f0f1f3;
+  --bg4: #e4e5e8;
+  --border: #e0e1e5;
+  --border2: #c8c9ce;
+  --text: #111214;
+  --text2: #4a4d56;
+  --text3: #8a8d96;
+
+  /* Accent colors - muted to match JDC gray/black palette */
+  --blue: #2563eb;
+  --blue2: #bfdbfe;
+  --blue3: #eff6ff;
+  --green: #16a34a;
+  --green2: #dcfce7;
+  --amber: #d97706;
+  --amber2: #fef3c7;
+  --red: #dc2626;
+  --red2: #fee2e2;
+  --purple: #7c3aed;
+  --purple2: #ede9fe;
+  --teal: #0d9488;
+  --teal2: #ccfbf1;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 'Inter', sans-serif; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', 'Inter', sans-serif;
+}
 
 input, select, textarea {
   background: var(--bg3);
@@ -43,7 +52,7 @@ input, select, textarea {
   width: 100%;
 }
 input:focus, select:focus, textarea:focus { border-color: var(--blue); }
-select option { background: var(--bg2); }
+select option { background: var(--bg2); color: var(--text); }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
