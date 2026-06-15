@@ -189,7 +189,7 @@ export default function Home() {
       {activeModal === 'editBudget' && <EditBudgetModal properties={properties} currentProp={currentProp} budgetItems={budgetItems} onClose={() => setActiveModal(null)} onSaved={loadData} />}
       {activeModal === 'editTeam' && <EditTeamModal properties={properties} currentProp={currentProp} teamMembers={teamMembers} onClose={() => setActiveModal(null)} onSaved={loadData} />}
       {activeModal === 'editAnnouncements' && <EditAnnouncementsModal properties={properties} currentProp={currentProp} announcements={announcements} onClose={() => setActiveModal(null)} onSaved={loadData} />}
-      {activeModal === 'editMilestones' && <EditMilestonesModal properties={properties} currentProp={currentProp} milestones={milestones} onClose={() => setActiveModal(null)} onSaved={loadData} />}
+      {activeModal === 'editMilestones' && <EditMilestonesModal properties={properties} currentProp={currentProp} milestones={milestones} teamMembers={teamMembers} onClose={() => setActiveModal(null)} onSaved={loadData} />}
     </div>
   )
 }
