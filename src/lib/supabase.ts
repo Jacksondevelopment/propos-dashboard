@@ -61,5 +61,6 @@ export type Milestone = {
   percent: number
   due_date: string
   status: 0 | 1 | 2 | 3
+  assignee_initials: string
   created_at: string
 }
