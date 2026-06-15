@@ -1,96 +1,195 @@
 'use client'
-import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useEffect, useState, useCallback } from 'react'
+import { supabase, type Property, type Task, type BudgetItem, type TeamMember, type Announcement, type Milestone } from '@/lib/supabase'
+import TopNav from '@/components/TopNav'
+import SiteGrid from '@/components/SiteGrid'
+import MainView from '@/components/MainView'
+import AddTaskModal from '@/components/AddTaskModal'
+import ReportModal from '@/components/ReportModal'
+import EditPropertyModal from '@/components/EditPropertyModal'
+import EditBudgetModal from '@/components/EditBudgetModal'
+import EditTeamModal from '@/components/EditTeamModal'
+import EditAnnouncementsModal from '@/components/EditAnnouncementsModal'
+import EditMilestonesModal from '@/components/EditMilestonesModal'
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
-  const [loading, setLoading] = useState(false)
-  const [msg, setMsg] = useState('')
-  const [error, setError] = useState('')
+type ModalType = 'addTask' | 'report' | 'editProperty' | 'editBudget' | 'editTeam' | 'editAnnouncements' | 'editMilestones' | null
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+export default function Home() {
+  const [user, setUser] = useState<any>(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
+  const [properties, setProperties] = useState<Property[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([])
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [announcements, setAnnouncements] = useState<Announcement[]>([])
+  const [milestones, setMilestones] = useState<Milestone[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const [currentProp, setCurrentProp] = useState<string>('all')
+  const [viewMode, setViewMode] = useState<'all' | 'bysite'>('all')
+  const [filterDept, setFilterDept] = useState('All')
+  const [filterStatus, setFilterStatus] = useState('All')
+  const [activeModal, setActiveModal] = useState<ModalType>(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) window.location.href = '/login'
+      else { setUser(session.user); setAuthLoading(false) }
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (!session) window.location.href = '/login'
+      else setUser(session.user)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const loadData = useCallback(async () => {
     setLoading(true)
-    setError('')
-    setMsg('')
-    if (mode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) setError(error.message)
-      else window.location.href = '/'
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password })
-      if (error) setError(error.message)
-      else setMsg('Check your email to confirm your account.')
-    }
+    const [p, t, b, tm, a, m] = await Promise.all([
+      supabase.from('properties').select('*').order('name'),
+      supabase.from('tasks').select('*').order('due_date'),
+      supabase.from('budget_items').select('*').order('name'),
+      supabase.from('team_members').select('*').order('department'),
+      supabase.from('announcements').select('*').order('created_at', { ascending: false }),
+      supabase.from('milestones').select('*').order('due_date'),
+    ])
+    if (p.data) setProperties(p.data)
+    if (t.data) setTasks(t.data)
+    if (b.data) setBudgetItems(b.data)
+    if (tm.data) setTeamMembers(tm.data)
+    if (a.data) setAnnouncements(a.data)
+    if (m.data) setMilestones(m.data)
     setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    if (!authLoading && user) loadData()
+  }, [authLoading, user, loadData])
+
+  useEffect(() => {
+    if (!user) return
+    const ch = supabase.channel('realtime-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => loadData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, () => loadData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_items' }, () => loadData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'milestones' }, () => loadData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, () => loadData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'team_members' }, () => loadData())
+      .subscribe()
+    return () => { supabase.removeChannel(ch) }
+  }, [user, loadData])
+
+  async function handleUpdateTaskStatus(taskId: string, newStatus: number) {
+    await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId)
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus as Task['status'] } : t))
   }
 
+  async function handleDeleteTask(taskId: string) {
+    await supabase.from('tasks').delete().eq('id', taskId)
+    setTasks(prev => prev.filter(t => t.id !== taskId))
+  }
+
+  async function handleAddTask(task: Omit<Task, 'id' | 'created_at'>) {
+    const { data, error } = await supabase.from('tasks').insert([task]).select().single()
+    if (!error && data) setTasks(prev => [...prev, data])
+    setActiveModal(null)
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    window.location.href = '/login'
+  }
+
+  const currentPropData = properties.find(p => p.id === currentProp)
+
+  if (authLoading) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f5f7' }}>
+      <div style={{ color: '#8a8d96', fontSize: '14px' }}>Loading...</div>
+    </div>
+  )
+
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg)', padding: '20px'
-    }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+      <TopNav
+        properties={properties}
+        currentProp={currentProp}
+        setCurrentProp={(id) => { setCurrentProp(id); setViewMode('all') }}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        onAddTask={() => setActiveModal('addTask')}
+        onExport={() => setActiveModal('report')}
+        onSignOut={handleSignOut}
+        userEmail={user?.email}
+      />
+
+      {/* Edit toolbar - light theme */}
       <div style={{
-        background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px',
-        padding: '40px', width: '100%', maxWidth: '400px'
+        display: 'flex', gap: '6px', padding: '8px 16px',
+        background: '#ffffff', borderBottom: '1px solid #e0e1e5', flexWrap: 'wrap',
+        alignItems: 'center'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>
-          <div style={{
-            width: '36px', height: '36px', background: 'var(--blue)', borderRadius: '8px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <i className="ti ti-building" style={{ color: '#fff', fontSize: '18px' }} />
-          </div>
-          <span style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text)' }}>PropOS</span>
-        </div>
-
-        <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text)', marginBottom: '6px' }}>
-          {mode === 'login' ? 'Sign in to your team' : 'Create account'}
-        </h2>
-        <p style={{ fontSize: '13px', color: 'var(--text3)', marginBottom: '28px' }}>
-          {mode === 'login' ? 'Property management dashboard' : 'Join your property management team'}
-        </p>
-
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div>
-            <label style={{ fontSize: '12px', color: 'var(--text2)', fontWeight: 500, display: 'block', marginBottom: '6px' }}>Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" required />
-          </div>
-          <div>
-            <label style={{ fontSize: '12px', color: 'var(--text2)', fontWeight: 500, display: 'block', marginBottom: '6px' }}>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
-          </div>
-
-          {error && (
-            <div style={{ background: 'var(--red2)', border: '1px solid var(--red)', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: 'var(--red)' }}>
-              {error}
-            </div>
-          )}
-          {msg && (
-            <div style={{ background: 'var(--green2)', border: '1px solid var(--green)', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: 'var(--green)' }}>
-              {msg}
-            </div>
-          )}
-
-          <button type="submit" disabled={loading} style={{
-            background: 'var(--blue)', color: '#fff', border: 'none', padding: '11px',
-            borderRadius: '8px', fontSize: '14px', fontWeight: 500, cursor: 'pointer',
-            fontFamily: 'inherit', opacity: loading ? 0.7 : 1, marginTop: '4px'
-          }}>
-            {loading ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}
-          </button>
-        </form>
-
-        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: 'var(--text3)' }}>
-          {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-          <button onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setMsg('') }}
-            style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit' }}>
-            {mode === 'login' ? 'Sign up' : 'Sign in'}
-          </button>
-        </p>
+        <span style={{ fontSize: '11px', color: '#8a8d96', letterSpacing: '.5px', textTransform: 'uppercase', marginRight: '4px' }}>Edit:</span>
+        {[
+          { label: '🏢 Property', modal: 'editProperty' as ModalType, disabled: currentProp === 'all' },
+          { label: '💰 Budget', modal: 'editBudget' as ModalType, disabled: false },
+          { label: '👥 Team', modal: 'editTeam' as ModalType, disabled: false },
+          { label: '📢 Announcements', modal: 'editAnnouncements' as ModalType, disabled: false },
+          { label: '🚩 Milestones', modal: 'editMilestones' as ModalType, disabled: false },
+        ].map(btn => (
+          <button key={btn.label} onClick={() => !btn.disabled && setActiveModal(btn.modal)} disabled={btn.disabled} style={{
+            background: '#f4f5f7', border: '1px solid #e0e1e5',
+            color: btn.disabled ? '#c8c9ce' : '#4a4d56',
+            padding: '5px 12px', borderRadius: '6px', cursor: btn.disabled ? 'not-allowed' : 'pointer',
+            fontSize: '12px', fontFamily: 'inherit', transition: 'all .15s', opacity: btn.disabled ? 0.5 : 1,
+          }}
+            onMouseEnter={e => { if (!btn.disabled) { (e.currentTarget as HTMLButtonElement).style.background = '#e4e5e8'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#c8c9ce' } }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f4f5f7'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#e0e1e5' }}
+          >{btn.label}</button>
+        ))}
+        {currentProp === 'all' && <span style={{ fontSize: '11px', color: '#8a8d96', marginLeft: '4px' }}>— Select a property to edit its details</span>}
       </div>
+
+      <div style={{ flex: 1, overflow: 'hidden' }}>
+        {loading ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#8a8d96', fontSize: '14px' }}>
+            Loading data...
+          </div>
+        ) : viewMode === 'bysite' ? (
+          <SiteGrid
+            properties={properties}
+            tasks={tasks}
+            budgetItems={budgetItems}
+            teamMembers={teamMembers}
+            onSelectProp={(id) => { setCurrentProp(id); setViewMode('all') }}
+          />
+        ) : (
+          <MainView
+            properties={properties}
+            tasks={tasks}
+            budgetItems={budgetItems}
+            teamMembers={teamMembers}
+            announcements={announcements}
+            milestones={milestones}
+            currentProp={currentProp}
+            filterDept={filterDept}
+            setFilterDept={setFilterDept}
+            filterStatus={filterStatus}
+            setFilterStatus={setFilterStatus}
+            onUpdateTaskStatus={handleUpdateTaskStatus}
+            onDeleteTask={handleDeleteTask}
+            onSetCurrentProp={(id) => { setCurrentProp(id); setViewMode('all') }}
+          />
+        )}
+      </div>
+
+      {activeModal === 'addTask' && <AddTaskModal properties={properties} currentProp={currentProp} onAdd={handleAddTask} onClose={() => setActiveModal(null)} />}
+      {activeModal === 'report' && <ReportModal properties={properties} tasks={tasks} budgetItems={budgetItems} teamMembers={teamMembers} milestones={milestones} currentProp={currentProp === 'all' ? (properties[0]?.id || '') : currentProp} onClose={() => setActiveModal(null)} />}
+      {activeModal === 'editProperty' && currentPropData && <EditPropertyModal property={currentPropData} onClose={() => setActiveModal(null)} onSaved={loadData} />}
+      {activeModal === 'editBudget' && <EditBudgetModal properties={properties} currentProp={currentProp} budgetItems={budgetItems} onClose={() => setActiveModal(null)} onSaved={loadData} />}
+      {activeModal === 'editTeam' && <EditTeamModal properties={properties} currentProp={currentProp} teamMembers={teamMembers} onClose={() => setActiveModal(null)} onSaved={loadData} />}
+      {activeModal === 'editAnnouncements' && <EditAnnouncementsModal properties={properties} currentProp={currentProp} announcements={announcements} onClose={() => setActiveModal(null)} onSaved={loadData} />}
+      {activeModal === 'editMilestones' && <EditMilestonesModal properties={properties} currentProp={currentProp} milestones={milestones} onClose={() => setActiveModal(null)} onSaved={loadData} />}
     </div>
   )
 }
