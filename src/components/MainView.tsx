@@ -55,6 +55,10 @@ export default function MainView({
     const team = teamMembers.filter(m => m.property_id === task.property_id)
     return team.find(m => m.initials === task.assignee_initials) || { initials: task.assignee_initials, name: task.assignee_initials }
   }
+  function getMilestoneAssignee(m: Milestone) {
+    const team = teamMembers.filter(t => t.property_id === m.property_id)
+    return team.find(t => t.initials === m.assignee_initials)
+  }
 
   const selectStyle: React.CSSProperties = {
     background: 'var(--bg3)', border: '1px solid var(--border)', color: 'var(--text2)',
@@ -238,6 +242,7 @@ export default function MainView({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {/* Milestones */}
             <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>
                 <i className="ti ti-flag" style={{ fontSize: '16px', color: 'var(--green)' }} /> Project Milestones
@@ -245,6 +250,7 @@ export default function MainView({
               {propMilestones.slice(0, 4).map(m => {
                 const p = properties.find(p => p.id === m.property_id)
                 const col = propColor(p?.color || 'blue')
+                const assignee = getMilestoneAssignee(m)
                 return (
                   <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', borderBottom: '1px solid var(--border)' }}>
                     <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: col, flexShrink: 0 }} />
@@ -258,12 +264,21 @@ export default function MainView({
                         <span style={{ fontSize: '10px', color: 'var(--text3)' }}>{m.due_date}</span>
                       </div>
                     </div>
+                    {assignee && (
+                      <div title={assignee.name} style={{
+                        width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0,
+                        background: DEPT_COLORS[assignee.department] || '#888',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '9px', fontWeight: 600, color: '#fff'
+                      }}>{assignee.initials}</div>
+                    )}
                   </div>
                 )
               })}
               {propMilestones.length === 0 && <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text3)', fontSize: '13px' }}>No milestones — click Edit → 🚩 Milestones to add some</div>}
             </div>
 
+            {/* Announcements */}
             <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>
                 <i className="ti ti-speakerphone" style={{ fontSize: '16px', color: 'var(--purple)' }} /> Announcements
